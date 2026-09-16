@@ -1,0 +1,99 @@
+datasource db {
+  provider = "sqlite" // Can be switched to "postgresql" for high-scale enterprise deployments
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+  USER
+}
+
+enum BotState {
+  ONLINE
+  OFFLINE
+  CONNECTING
+  PAIRING_REQUIRED
+}
+
+enum LogLevel {
+  INFO
+  WARN
+  ERROR
+  AI_CHAT
+  COMMAND
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  passwordHash  String
+  role          Role            @default(OPERATOR)
+  coins         Int             @default(1220) // Default starting balance (~30 days)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  reactionTasks ChannelTask[]
+  auditLogs     AuditLog[]
+}
+
+model BotInstance {
+  id              String         @id @default("aira-core")
+  name            String         @default("Aira 💗")
+  status          BotState       @default(OFFLINE)
+  pairedNumber    String?
+  batteryLevel    Int?
+  isPairingMode   Boolean        @default(true)
+  prefix          String         @default(".")
+  aiModel         String         @default("gpt-4o-mini")
+  totalMessages   Int            @default(0)
+  totalAiReplies  Int            @default(0)
+  lastSeen        DateTime?
+  uptimeSeconds   Int            @default(0)
+  updatedAt       DateTime       @updatedAt
+}
+
+model MessageLog {
+  id         String    @id @default(cuid())
+  senderJid  String
+  senderName String?
+  message    String
+  aiReply    String?
+  command    String?
+  level      LogLevel  @default(INFO)
+  latencyMs  Int?
+  createdAt  DateTime  @default(now())
+
+  @@index([senderJid])
+  @@index([createdAt])
+}
+
+model ChannelTask {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channelLink String
+  channelName String?
+  emojis      String   @default("❤️,🔥,✨,😍,👍")
+  daysActive  Int      @default(30)
+  coinsSpent  Int      @default(1200)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
