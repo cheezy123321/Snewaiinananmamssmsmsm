@@ -1,0 +1,19 @@
+{
+  "name": "aira-ai-companion-bot",
+  "version": "2.5.0",
+  "description": "Full-featured Production WhatsApp AI Bot engineered by Mr. Asitha",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^6.7.9",
+    "axios": "^1.7.9",
+    "chalk": "^5.4.1",
+    "dotenv": "^16.4.7",
+    "node-cache": "^5.1.2",
+    "pino": "^9.6.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
